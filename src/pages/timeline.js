@@ -1,9 +1,16 @@
 import swal from 'sweetalert';
-import { sportIcons } from '../utils/imagesDefault';
+import { profileDefault, sportIcons } from '../utils/imagesDefault';
 import footerTemplate from '../templates/footer';
 import {
   getEvents, editEvent, deletePost, getEventById,
 } from '../firebase/post';
+
+const userProfile = (photo) => {
+  if (photo) {
+    return photo;
+  }
+  return profileDefault.profileUser;
+};
 
 const getSportIcon = (sport) => {
   const icon = sportIcons[sport];
@@ -15,15 +22,16 @@ const getSportIcon = (sport) => {
 
 const event = (evento) => {
   const user = JSON.parse(localStorage.getItem('session')).user.uid;
-  const eventContainer = document.createElement('article');
-  eventContainer.setAttribute('class', 'eventTimeline');
   const likesQuantity = evento.likes ? evento.likes.length : 0;
   const commentQuantity = evento.comment ? evento.comment.length : 0;
-  eventContainer.innerHTML = `
+  const eventContainer = document.createElement('article');
+  eventContainer.setAttribute('class', 'eventTimeline');
+
+  const view = `
     <div class="event__info">
       <div class="event__upper--container">
         <div class="user">
-          <img src="assets/perfil.png">
+          <img src="${userProfile(user.photo)}">
           <h2>${evento.nombre}</h2>
         </div>
         <div class="sport">
@@ -33,6 +41,8 @@ const event = (evento) => {
       </div>
       <p><span class="event__subtitle">Lugar: </span>${evento.lugar}</p>
       <p>${evento.descripcion}</p>
+      <div class="eventImg">
+      </div>
       <div class="event__interaction">
         <div>
           <span class="flaticon-strong icons__timeline"></span>
@@ -72,7 +82,19 @@ const event = (evento) => {
       </div>
     </div>
   `;
-  // mil funciones para comentar
+
+  eventContainer.innerHTML = view;
+
+  const image = () => {
+    if (evento.image) {
+      const imgContainer = eventContainer.querySelector('.eventImg');
+      const img = document.createElement('img');
+      img.src = evento.image;
+      imgContainer.appendChild(img);
+    }
+  };
+  image();
+
   const createComment = () => {
     const comment = evento.comment || [];
     const commentValue = eventContainer.querySelector('.input__comment').value;
